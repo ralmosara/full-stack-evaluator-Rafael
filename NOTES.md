@@ -18,6 +18,10 @@ ConnectionStrings__DefaultConnection=Host=localhost;Port=5432;Database=taskmanag
 -- added .env  with this content
 VITE_API_BASE_URL=http://localhost:5215
 -- Set Up Authentication
+- Create Login Page and Registration Page
+- Add AuthContext,ProtectedRoute
+- Update App jsx
+- Update Tasks
 
 
 
