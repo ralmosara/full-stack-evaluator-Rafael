@@ -1,62 +1,65 @@
-using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
+using TaskManager.DTOs;
+using TaskManager.Services;
 
-using TaskManager.Models;
-using TaskManager.Data;
 namespace TaskManager.API
 {
-    [Route("tasks")]
+    [Route("api/tasks")]
     [ApiController]
+    [Authorize]
     public class TasksController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ITaskService _taskService;
 
-        public TasksController(ApplicationDbContext context)
+        public TasksController(ITaskService taskService)
         {
-            _context = context;
+            _taskService = taskService;
         }
 
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetAll()
         {
-            
-            var tasks = await _context.Tasks.ToListAsync();
+            var tasks = await _taskService.GetAllTasksAsync(GetUserId());
             return Ok(tasks);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] TaskItem task)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            
-            _context.Tasks.Add(task);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = task.Id }, task);
+            var task = await _taskService.GetTaskByIdAsync(id, GetUserId());
+            if (task == null) return NotFound();
+            return Ok(task);
         }
 
-        [HttpPut("{id}")] 
-        public async Task<IActionResult> Update(int id, [FromBody] TaskItem updated)
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateTaskRequest request)
         {
-            var task = await _context.Tasks.FindAsync(id);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var task = await _taskService.CreateTaskAsync(request, GetUserId());
+            return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateTaskRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var task = await _taskService.UpdateTaskAsync(id, request, GetUserId());
             if (task == null) return NotFound();
-
-            task.Title = updated.Title;
-            task.IsDone = updated.IsDone;
-            await _context.SaveChangesAsync();
-
             return Ok(task);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var task = await _context.Tasks.FindAsync(id);
-            if (task == null) return NotFound();
-
-            _context.Tasks.Remove(task);
-            await _context.SaveChangesAsync();
-
+            var result = await _taskService.DeleteTaskAsync(id, GetUserId());
+            if (!result) return NotFound();
             return NoContent();
         }
     }
