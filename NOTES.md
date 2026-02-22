@@ -17,6 +17,7 @@ ConnectionStrings__DefaultConnection=Host=localhost;Port=5432;Database=taskmanag
 -- npm install 
 -- added .env  with this content
 VITE_API_BASE_URL=http://localhost:5215
+-- Set Up Authentication
 
 
 
