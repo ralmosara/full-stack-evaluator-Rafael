@@ -1,10 +1,12 @@
-# BACKEND SET UP
+# BACKEND
 
-1.Install .net 9
-2.Run dotnet run in backend folder
-3.Install dotnet -ef to run dotnet ef database update
-4.Install EF Core In-Memory for testing
-5.Create .env with this content
+
+-- Install .net 9
+-- Install Docker for PostgreSQL
+-- Run dotnet run in backend folder
+-- Install dotnet -ef to run dotnet ef database update
+-- Install EF Core In-Memory for testing
+-- Create .env with this content
 ConnectionStrings__DefaultConnection=Host=localhost;Port=5432;Database=taskmanagerdb;Username=postgres;Password=postgres
 
 
